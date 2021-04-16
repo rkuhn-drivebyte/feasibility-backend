@@ -67,7 +67,6 @@
       <artifactId>broker-client</artifactId>
       <version>1.2</version>
     </dependency>
-    
 
     <dependency>
       <groupId>org.highmed.dsf</groupId>
@@ -90,7 +89,7 @@
     <dependency>
       <groupId>de.numcodex</groupId>
       <artifactId>sq2cql</artifactId>
-      <version>0.1.0</version>
+      <version>0.1.2</version>
     </dependency>
 
     <dependency>
@@ -116,5 +115,15 @@
       </plugin>
     </plugins>
   </build>
+
+  <repositories>
+    <repository>
+      <id>codex</id>
+      <name>GitHub num-codex Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/num-codex/codex-sq2cql</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
 
 </project>

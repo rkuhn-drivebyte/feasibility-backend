@@ -1,6 +1,7 @@
 package de.numcodex.feasibility_gui_backend.service.query_builder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,6 +11,8 @@ import de.numcodex.sq2cql.Translator;
 import de.numcodex.sq2cql.model.cql.Library;
 import de.numcodex.sq2cql.model.structured_query.Criterion;
 import java.util.List;
+
+import de.numcodex.sq2cql.model.structured_query.TranslationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,5 +46,20 @@ class CqlQueryBuilderTest {
         var cql = cqlQueryBuilder.getQueryContent(structuredQuery);
 
         assertEquals(Library.of().print(PrintContext.ZERO), cql);
+    }
+
+    @Test
+    void getQueryContent_Translation_Error() throws Exception {
+        var structuredQuery = new StructuredQuery();
+        when(objectMapper.writeValueAsString(structuredQuery)).thenReturn(STRUCTURED_QUERY_JSON);
+        when(objectMapper.readValue(STRUCTURED_QUERY_JSON,
+                de.numcodex.sq2cql.model.structured_query.StructuredQuery.class)).thenReturn(STRUCTURED_QUERY);
+        var translationException = new TranslationException("");
+        when(translator.toCql(STRUCTURED_QUERY)).thenThrow(translationException);
+
+        var exception = assertThrows(QueryBuilderException.class, () -> cqlQueryBuilder.getQueryContent(structuredQuery));
+
+        assertEquals("problem while translating a structured query into a CQL library", exception.getMessage());
+        assertEquals(translationException, exception.getCause());
     }
 }

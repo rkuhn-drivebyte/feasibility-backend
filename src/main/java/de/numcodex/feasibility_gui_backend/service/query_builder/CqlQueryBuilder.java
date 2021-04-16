@@ -6,6 +6,8 @@ import de.numcodex.feasibility_gui_backend.model.query.StructuredQuery;
 import de.numcodex.sq2cql.PrintContext;
 import de.numcodex.sq2cql.Translator;
 import de.numcodex.sq2cql.model.cql.Library;
+import de.numcodex.sq2cql.model.structured_query.TranslationException;
+
 import java.util.Objects;
 
 public class CqlQueryBuilder implements QueryBuilder {
@@ -21,11 +23,17 @@ public class CqlQueryBuilder implements QueryBuilder {
     @Override
     public String getQueryContent(StructuredQuery query) throws QueryBuilderException {
         try {
-            var structuredQuery = objectMapper.readValue(objectMapper.writeValueAsString(query),
-                    de.numcodex.sq2cql.model.structured_query.StructuredQuery.class);
-
-            Library library = translator.toCql(structuredQuery);
+            Library library = translator.toCql(translateQuery(query));
             return library.print(PrintContext.ZERO);
+        } catch (TranslationException e) {
+            throw new QueryBuilderException("problem while translating a structured query into a CQL library", e);
+        }
+    }
+
+    private de.numcodex.sq2cql.model.structured_query.StructuredQuery translateQuery(StructuredQuery query) throws QueryBuilderException {
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsString(query),
+                        de.numcodex.sq2cql.model.structured_query.StructuredQuery.class);
         } catch (JsonProcessingException e) {
             throw new QueryBuilderException("problem while transforming structured query", e);
         }
