@@ -1,0 +1,50 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "termCodes": [
+            {
+              "code": "5-93...5-99",
+              "system": "http://fhir.de/CodeSystem/dimdi/ops",
+              "version": "2021",
+              "display": "Zusatzinformationen zu Operationen"
+            }
+          ],
+          "id": "d226b0ce-c7fc-4eb2-af77-9f19a6874d05",
+          "leaf": false,
+          "selectable": true,
+          "timeRestrictionAllowed": true,
+          "valueDefinitions": [],
+          "attributeDefinitions": [],
+          "display": "Zusatzinformationen zu Operationen"
+        }
+      ],
+      "display": "OPERATIONEN",
+      "id": "17b15d41-33c2-e606-531c-1354fb95efe9",
+      "leaf": false,
+      "selectable": true,
+      "termCodes": [
+        {
+          "code": "5",
+          "display": "OPERATIONEN",
+          "system": "http://fhir.de/CodeSystem/dimdi/ops",
+          "version": "2021"
+        }
+      ],
+      "timeRestrictionAllowed": true
+    }
+  ],
+  "display": "Prozedur",
+  "id": "6c0976dd-9e0f-4855-84be-36bacc1f62e6",
+  "leaf": false,
+  "selectable": false,
+  "termCode": {
+    "code": "Prozedur",
+    "display": "Prozedur",
+    "system": "num.abide"
+  },
+  "timeRestrictionAllowed": false,
+  "valueDefinitions": []
+}

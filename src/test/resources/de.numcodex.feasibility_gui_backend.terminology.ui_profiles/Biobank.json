@@ -1,0 +1,48 @@
+{
+  "children": [
+    {
+      "children": [],
+      "display": "SELECTION Unselectable",
+      "id": "75ee409e-9dbd-4c81-a5ae-41e1ac3e9537",
+      "leaf": false,
+      "selectable": false,
+      "termCodes": [
+        {
+          "code": "6",
+          "display": "SELECTION Unselectable",
+          "system": "https://test.de/CodeSystem/test",
+          "version": "2022"
+        }
+      ],
+      "timeRestrictionAllowed": false
+    },
+    {
+      "children": [],
+      "display": "SELECTION Selectable",
+      "id": "849e42a1-dea4-4918-bc31-ae1550103548",
+      "leaf": false,
+      "selectable": true,
+      "termCodes": [
+        {
+          "code": "7",
+          "display": "SELECTION Selectable",
+          "system": "https://test.de/CodeSystem/test",
+          "version": "2022"
+        }
+      ],
+      "timeRestrictionAllowed": false
+    }
+  ],
+  "display": "Biobank",
+  "id": "54f3a5c7-5ac1-4301-b763-292ee7888278",
+  "leaf": false,
+  "selectable": false,
+  "termCodes": [
+    {
+      "code": "Biobank",
+      "display": "Biobank",
+      "system": "num.abide"
+    }
+  ],
+  "timeRestrictionAllowed": true
+}
