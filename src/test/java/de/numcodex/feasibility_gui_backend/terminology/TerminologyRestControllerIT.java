@@ -1,5 +1,6 @@
 package de.numcodex.feasibility_gui_backend.terminology;
 
+import de.numcodex.feasibility_gui_backend.terminology.search.TerminologySearchSpringConfig;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,13 +11,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @Tag("terminology")
 @ExtendWith(SpringExtension.class)
-@Import({TerminologyService.class})
+@Import({
+        TerminologySpringConfig.class,
+        TerminologySearchSpringConfig.class
+        })
 @WebMvcTest(
         controllers = TerminologyRestController.class,
         properties = {
@@ -103,18 +106,15 @@ public class TerminologyRestControllerIT {
                 .andExpect(status().isBadRequest());
     }
 
-    // TODO: This should be revised in a separate issue - the request should not fail with a
-    //       500 since the server is expected to handle this input (even if the category is
-    //       internally not known).
     @Test
-    public void testSelectableEntries_FailsIfCategoryIdIsUnknownWith500() {
+    public void testSelectableEntries_ReturnsEmptyListIfCategoryIdIsUnknown() throws Exception {
         var testSearchQuery = "###ZZZ";
         var unknownTestSearchCategoryId = "a275e457-fa67-4d55-bed5-ebe592156222";
 
-        assertThrows(Exception.class, () ->
-                mockMvc.perform(get("/api/v1/terminology/selectable-entries?query={query}&categoryId={categoryId}",
-                        testSearchQuery, unknownTestSearchCategoryId))
-        );
+        mockMvc.perform(get("/api/v1/terminology/selectable-entries?query={query}&categoryId={categoryId}",
+                testSearchQuery, unknownTestSearchCategoryId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
