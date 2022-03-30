@@ -4,15 +4,22 @@ import de.numcodex.feasibility_gui_backend.terminology.api.TerminologyEntry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 
 import java.io.IOException;
 import java.util.*;
 
-import static de.numcodex.feasibility_gui_backend.terminology.search.TerminologyIndexer.IndexBooleanValue.TRUE;
-import static de.numcodex.feasibility_gui_backend.terminology.search.TerminologyIndexer.IndexIdentifier.*;
+import static de.numcodex.feasibility_gui_backend.terminology.search.TerminologyIndexer.IndexFieldBooleanValue.TRUE;
+import static de.numcodex.feasibility_gui_backend.terminology.search.TerminologyIndexer.IndexField.*;
 
+/**
+ * Index of a terminology that is held in memory.
+ */
 @RequiredArgsConstructor
 @Slf4j
 class InMemoryTerminologyIndex implements TerminologyIndex {
@@ -23,6 +30,9 @@ class InMemoryTerminologyIndex implements TerminologyIndex {
     @NonNull
     private final IndexSearcher terminologyIndexSearcher;
 
+    @NonNull
+    private final QueryParser indexSearchQueryParser;
+
     @Override
     public Optional<TerminologyEntry> searchById(UUID entryId) {
         return Optional.ofNullable(terminologyEntries.get(entryId));
@@ -30,51 +40,30 @@ class InMemoryTerminologyIndex implements TerminologyIndex {
 
     @Override
     public List<TerminologyEntry> searchSelectableEntries(String searchTerm) throws TerminologySearchException {
-        var bootstrappedQueryBuilder = createBootstrappedQueryBuilder(searchTerm);
-        return runSearchQuery(bootstrappedQueryBuilder.build());
+        try {
+            // TODO: highly controversial due to readability - please discuss in review!
+            var searchQueryTemplate = "(%s:\"%s\" OR %s:\"%s\") AND %s:\"%s\"";
+            var searchQuery = indexSearchQueryParser.parse(searchQueryTemplate.formatted(DISPLAY, searchTerm,
+                    TERM_CODE, searchTerm, SELECTABLE, TRUE));
+            return runSearchQuery(searchQuery);
+        } catch (ParseException e) {
+            throw new TerminologySearchException("cannot parse search query", e);
+        }
     }
 
     @Override
-    public List<TerminologyEntry> searchSelectableEntries(String searchTerm, UUID terminologyCategory)
+    public List<TerminologyEntry> searchSelectableEntries(String searchTerm, UUID terminologyCategoryId)
             throws TerminologySearchException {
-        var bootstrappedQueryBuilder = createBootstrappedQueryBuilder(searchTerm);
 
-        var categoryQuery = new PhraseQuery.Builder()
-                .add(new Term(CATEGORY, terminologyCategory.toString()))
-                .build();
-
-        return runSearchQuery(
-                bootstrappedQueryBuilder.add(categoryQuery, BooleanClause.Occur.MUST)
-                        .build());
-    }
-
-    /**
-     * Creates a bootstrapped boolean query builder based on the given search term.
-     * The result is equivalent to the following search query:
-     * (display:"<searchTerm>" OR termCode:"<searchTerm>") AND selectable:"true"
-     *
-     * @param searchTerm The term that is searched for. It gets searched for this term within `display` and `termCode`.
-     * @return A {@link BooleanQuery.Builder} bootstrapped with the mentioned search query.
-     */
-    private BooleanQuery.Builder createBootstrappedQueryBuilder(String searchTerm) {
-        var displayQuery = new PrefixQuery(new Term(DISPLAY, searchTerm));
-        var termCodeQuery = new PrefixQuery(new Term(TERM_CODE, searchTerm));
-
-        var displayOrTermCodeSearchQuery = new BooleanQuery.Builder()
-                .add(new BooleanQuery.Builder()
-                                .add(new BooleanClause(displayQuery, BooleanClause.Occur.SHOULD))
-                                .add(new BooleanClause(termCodeQuery, BooleanClause.Occur.SHOULD))
-                                .build(),
-                        BooleanClause.Occur.MUST)
-                .build();
-
-        var selectableSearchQuery = new PhraseQuery.Builder()
-                .add(new Term(SELECTABLE, TRUE))
-                .build();
-
-        return new BooleanQuery.Builder()
-                .add(displayOrTermCodeSearchQuery, BooleanClause.Occur.MUST)
-                .add(selectableSearchQuery, BooleanClause.Occur.FILTER);
+        try {
+            // TODO: highly controversial due to readability - please discuss in review!
+            var searchQueryTemplate = "(%s:\"%s\" OR %s:\"%s\") AND %s:\"%s\" AND %s:\"%s\"";
+            var searchQuery = indexSearchQueryParser.parse(searchQueryTemplate.formatted(DISPLAY, searchTerm,
+                    TERM_CODE, searchTerm, SELECTABLE, TRUE, CATEGORY, terminologyCategoryId.toString()));
+            return runSearchQuery(searchQuery);
+        } catch (ParseException e) {
+            throw new TerminologySearchException("cannot parse search query", e);
+        }
     }
 
     /**
@@ -86,6 +75,8 @@ class InMemoryTerminologyIndex implements TerminologyIndex {
      */
     private List<TerminologyEntry> runSearchQuery(Query searchQuery) throws TerminologySearchException {
         try {
+            // TODO: This should be adjustable. However, at this point we are mimicking former implementation details.
+            //       Thus, this should be targeted in a separate issue.
             var topResults = terminologyIndexSearcher.search(searchQuery, 20);
             return lookupTerminologyEntries(topResults);
         } catch (IOException e) {

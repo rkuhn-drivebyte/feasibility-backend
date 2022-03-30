@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -32,13 +33,13 @@ public class TerminologyRestController {
     }
 
     @GetMapping("selectable-entries")
-    public List<TerminologyEntry> getSelectableEntries(@RequestParam("query") String query,
-                                                       @RequestParam(value = "categoryId", required = false) UUID categoryId) {
+    public List<TerminologyEntry> getSelectableEntries(@RequestParam("query") String searchTerm,
+                                                       @RequestParam(value = "categoryId") Optional<UUID> categoryId) {
         try {
-            if (categoryId == null) {
-                return terminologyService.searchSelectableEntries(query.toLowerCase());
+            if (categoryId.isPresent()) {
+                return terminologyService.searchSelectableEntries(searchTerm, categoryId.get());
             } else {
-                return terminologyService.searchSelectableEntries(query.toLowerCase(), categoryId);
+                return terminologyService.searchSelectableEntries(searchTerm);
             }
         } catch (TerminologySearchException e) {
             // TODO: handle this!!!

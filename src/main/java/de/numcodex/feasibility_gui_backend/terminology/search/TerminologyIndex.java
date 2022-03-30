@@ -38,11 +38,11 @@ public interface TerminologyIndex {
      * When searching for the search term, only takes `display` and `termCode` attributes of a {@link TerminologyEntry}
      * into account.
      *
-     * @param searchTerm          The term that is searched for.
-     * @param terminologyCategory Identifier of the category that is used for this search.
+     * @param searchTerm            The term that is searched for.
+     * @param terminologyCategoryId Identifier of the category that is used for this search.
      * @return A list of selectable {@link TerminologyEntry}s that match the given search term.
      * @throws TerminologySearchException If an error occurs while searching.
      */
-    List<TerminologyEntry> searchSelectableEntries(String searchTerm, UUID terminologyCategory)
+    List<TerminologyEntry> searchSelectableEntries(String searchTerm, UUID terminologyCategoryId)
             throws TerminologySearchException;
 }

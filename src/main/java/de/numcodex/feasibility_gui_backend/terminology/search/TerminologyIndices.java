@@ -5,10 +5,8 @@ import de.numcodex.feasibility_gui_backend.terminology.api.TerminologyEntry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
@@ -17,7 +15,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,10 +27,10 @@ import java.util.stream.Collectors;
 public class TerminologyIndices {
 
     @NonNull
-    private final Analyzer analyzer;
+    private final TerminologyIndexer terminologyIndexer;
 
     @NonNull
-    private final TerminologyIndexer terminologyIndexer;
+    private final QueryParser indexSearchQueryParser;
 
     /**
      * Creates an in-memory {@link TerminologyIndex} of the given terminology entries.
@@ -47,38 +44,11 @@ public class TerminologyIndices {
             throws IOException {
         log.info("creating in memory terminology index");
         var inMemoryDirectory = new ByteBuffersDirectory();
-        indexEntries(inMemoryDirectory, entries, analyzer);
+        terminologyIndexer.indexEntries(inMemoryDirectory, entries);
 
         var indexSearcher = createIndexSearcher(inMemoryDirectory);
-        return new InMemoryTerminologyIndex(mapUncategorizedEntriesToIdentifier(entries), indexSearcher);
-    }
-
-    /**
-     * Indexes the given categorized {@link TerminologyEntry}s using the given {@link Directory}.
-     * The {@link Analyzer} performs operations on eligible index attributes of each {@link TerminologyEntry} before
-     * the actual indexing.
-     *
-     * @param indexDirectory     Storage object for the index.
-     * @param categorizedEntries Categorized terminology entries. Entries should be flat, i.e. they should not resemble
-     *                           a tree. If they are given as a tree then only the root element gets indexed.
-     * @param tokenAnalyzer      Operator for eligible index attributes.
-     * @throws IOException If an error occurs during indexing.
-     */
-    private void indexEntries(Directory indexDirectory, Map<CategoryEntry, List<TerminologyEntry>> categorizedEntries,
-                              Analyzer tokenAnalyzer) throws IOException {
-        var directoryWriter = new IndexWriter(indexDirectory, new IndexWriterConfig(tokenAnalyzer));
-
-        for (Entry<CategoryEntry, List<TerminologyEntry>> entriesByCategory : categorizedEntries.entrySet()) {
-            log.info("indexing %d terminology entries in category '%s'".formatted(entriesByCategory.getValue().size(),
-                    entriesByCategory.getKey().getDisplay()));
-
-            for (TerminologyEntry terminologyEntry : entriesByCategory.getValue()) {
-                terminologyIndexer.index(directoryWriter, terminologyEntry, entriesByCategory.getKey());
-            }
-        }
-
-        directoryWriter.flush();
-        directoryWriter.close();
+        return new InMemoryTerminologyIndex(mapUncategorizedEntriesToIdentifier(entries), indexSearcher,
+                indexSearchQueryParser);
     }
 
     /**
