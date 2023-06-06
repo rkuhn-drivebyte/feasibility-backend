@@ -1,5 +1,6 @@
 name: My plan
 level: beginner
+update_id: 5d253453-b8c7-4ce7-98c1-154613c9f132
 author: Jit
 version: 0.1
 owners:
@@ -8,13 +9,11 @@ references:
   - https://www.jit.io
 tags: []
 items:
-  - name: Scan code for hard-coded secrets
-    uses: jitsecurity-controls/jit-plans/items/code/item-secret-detection.yml@latest
-  - name: Scan your code for vulnerabilities (SAST)
-    uses: >-
-      jitsecurity-controls/jit-plans/items/code/item-code-vulnerability.yml@latest
-  - name: Scan your code dependencies for vulnerabilities (SCA)
-    uses: jitsecurity-controls/jit-plans/items/code/item-dependency-check.yml@latest
   - name: Scan your API for vulnerabilities
     uses: jitsecurity-controls/jit-plans/items/runtime/item-api-security.yml@latest
-
+  - name: Scan your code for vulnerabilities (SAST)
+    uses: jitsecurity-controls/jit-plans/items/code/item-code-vulnerability.yml@latest
+  - name: Scan your code dependencies for vulnerabilities (SCA)
+    uses: jitsecurity-controls/jit-plans/items/code/item-dependency-check.yml@latest
+  - name: Scan code for hard-coded secrets
+    uses: jitsecurity-controls/jit-plans/items/code/item-secret-detection.yml@latest
