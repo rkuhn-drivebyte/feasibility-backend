@@ -9,8 +9,6 @@ references:
   - https://www.jit.io
 tags: []
 items:
-  - name: Scan your API for vulnerabilities
-    uses: jitsecurity-controls/jit-plans/items/runtime/item-api-security.yml@latest
   - name: Scan your code for vulnerabilities (SAST)
     uses: jitsecurity-controls/jit-plans/items/code/item-code-vulnerability.yml@latest
   - name: Scan your code dependencies for vulnerabilities (SCA)
